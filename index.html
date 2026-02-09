@@ -274,49 +274,47 @@ document.getElementById("simTemp").addEventListener("input",function(){
 function calcular(){
 
     let tipoSeleccionado = document.getElementById("tipo");
-    let tipoActual = tipoSeleccionado.value;
     let R = parseFloat(document.getElementById("resistencia").value);
     let beta = parseFloat(document.getElementById("beta").value);
 
     if(!R || R <= 0) return;
 
-    let opciones = ["NTC_1000","NTC_10000","NTC_25000",
-                    "PTC_1000","PTC_10000","PTC_25000"];
+    let opciones = ["NTC_1000","NTC_10000","NTC_25000"];
 
-    let mejorOpcion = tipoActual;
-    let tempValida = null;
+    let mejorOpcion = null;
+    let mejorTemp = null;
+    let menorDiferencia = Infinity;
 
     for(let opcion of opciones){
 
         let R0 = parseInt(opcion.split("_")[1]);
-        let temp;
-
-        if(opcion.includes("NTC")){
-            temp = calcNTC(R,R0,beta);
-        } else {
-            temp = calcPTC(R,R0);
-        }
+        let temp = calcNTC(R,R0,beta);
 
         if(temp > -40 && temp < 120){
-            mejorOpcion = opcion;
-            tempValida = temp;
-            break;
+
+            // Comparamos con temperatura ambiente típica 25°C
+            let diferencia = Math.abs(temp - 25);
+
+            if(diferencia < menorDiferencia){
+                menorDiferencia = diferencia;
+                mejorOpcion = opcion;
+                mejorTemp = temp;
+            }
         }
     }
 
-    // Si detecta mejor opción distinta → cambia selector
-    if(mejorOpcion !== tipoActual){
+    // Si encontramos opción lógica
+    if(mejorOpcion){
         tipoSeleccionado.value = mejorOpcion;
-    }
-
-    if(tempValida !== null){
-        actualizarDisplay(tempValida);
-        generarGrafica(mejorOpcion,beta,tempValida);
+        actualizarDisplay(mejorTemp);
+        generarGrafica(mejorOpcion,beta,mejorTemp);
     }
 }
+
 
 </script>
 
 </body>
 </html>
+
 
