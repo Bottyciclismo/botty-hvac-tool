@@ -272,20 +272,51 @@ document.getElementById("simTemp").addEventListener("input",function(){
 });
 
 function calcular(){
-    let tipo=document.getElementById("tipo").value;
-    let R=parseFloat(document.getElementById("resistencia").value);
-    let beta=parseFloat(document.getElementById("beta").value);
 
-    if(!R||R<=0) return;
+    let tipoSeleccionado = document.getElementById("tipo");
+    let tipoActual = tipoSeleccionado.value;
+    let R = parseFloat(document.getElementById("resistencia").value);
+    let beta = parseFloat(document.getElementById("beta").value);
 
-    let R0=parseInt(tipo.split("_")[1]);
-    let tempC=tipo.includes("NTC")?calcNTC(R,R0,beta):calcPTC(R,R0);
+    if(!R || R <= 0) return;
 
-    actualizarDisplay(tempC);
-    generarGrafica(tipo,beta,tempC);
+    let opciones = ["NTC_1000","NTC_10000","NTC_25000",
+                    "PTC_1000","PTC_10000","PTC_25000"];
+
+    let mejorOpcion = tipoActual;
+    let tempValida = null;
+
+    for(let opcion of opciones){
+
+        let R0 = parseInt(opcion.split("_")[1]);
+        let temp;
+
+        if(opcion.includes("NTC")){
+            temp = calcNTC(R,R0,beta);
+        } else {
+            temp = calcPTC(R,R0);
+        }
+
+        if(temp > -40 && temp < 120){
+            mejorOpcion = opcion;
+            tempValida = temp;
+            break;
+        }
+    }
+
+    // Si detecta mejor opción distinta → cambia selector
+    if(mejorOpcion !== tipoActual){
+        tipoSeleccionado.value = mejorOpcion;
+    }
+
+    if(tempValida !== null){
+        actualizarDisplay(tempValida);
+        generarGrafica(mejorOpcion,beta,tempValida);
+    }
 }
 
 </script>
 
 </body>
 </html>
+
