@@ -2,7 +2,13 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BOTTY HVAC TOOL</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f2027">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 body {
@@ -11,7 +17,8 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  min-height: 100vh;
+  padding: 10px;
   color: white;
 }
 
@@ -36,13 +43,12 @@ body {
 
 .display {
   background: #001d3d;
-  font-size: 52px;
+  font-size: 65px;
   text-align: right;
   padding: 20px;
   border-radius: 15px;
   margin-bottom: 15px;
   box-shadow: inset 0 0 15px #000;
-  transition: 0.3s;
 }
 
 .bar-container {
@@ -58,6 +64,10 @@ body {
   width: 0%;
   background: #4cc9f0;
   transition: 0.4s;
+}
+
+canvas {
+  margin-top: 20px;
 }
 
 label {
@@ -86,12 +96,6 @@ button {
   font-size: 16px;
   margin-top: 15px;
   cursor: pointer;
-  transition: 0.2s;
-}
-
-button:hover {
-  background: #90e0ef;
-  transform: scale(1.05);
 }
 
 .footer {
@@ -101,16 +105,7 @@ button:hover {
   color: #89c2d9;
 }
 </style>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0f2027">
 </head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('service-worker.js');
-}
-</script>
 
 <body>
 
@@ -123,6 +118,8 @@ if ('serviceWorker' in navigator) {
 <div class="bar-container">
   <div class="bar" id="bar"></div>
 </div>
+
+<canvas id="grafica"></canvas>
 
 <label>Tipo de Sonda</label>
 <select id="tipo">
@@ -150,6 +147,12 @@ Modo Secador Frigorífico • Zona normal 2°C – 45°C
 
 <script>
 
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('service-worker.js');
+}
+
+let chart;
+
 function calcNTC(R, R0, beta){
     let T0 = 298.15;
     let tempK = 1 / ((1/T0) + (1/beta) * Math.log(R/R0));
@@ -159,6 +162,62 @@ function calcNTC(R, R0, beta){
 function calcPTC(R, R0){
     let alpha = 0.00385;
     return (R - R0) / (R0 * alpha);
+}
+
+function generarGrafica(tipo, beta, tempActual){
+
+    let R0 = parseInt(tipo.split("_")[1]);
+    let temps = [];
+    let resistencias = [];
+
+    for(let t = -20; t <= 100; t++){
+        let R;
+        if(tipo.includes("NTC")){
+            let T0 = 298.15;
+            let Tk = t + 273.15;
+            R = R0 * Math.exp(beta * (1/Tk - 1/T0));
+        } else {
+            let alpha = 0.00385;
+            R = R0 * (1 + alpha * t);
+        }
+        temps.push(t);
+        resistencias.push(R);
+    }
+
+    if(chart) chart.destroy();
+
+    chart = new Chart(document.getElementById('grafica'), {
+        type: 'line',
+        data: {
+            labels: temps,
+            datasets: [
+                {
+                    label: 'Curva de la sonda',
+                    data: resistencias,
+                    borderColor: '#4cc9f0',
+                    borderWidth: 2,
+                    fill: false,
+                    pointRadius: 0
+                },
+                {
+                    label: 'Medición actual',
+                    data: temps.map(t => t === Math.round(tempActual) ? resistencias[t+20] : null),
+                    borderColor: '#ff6b6b',
+                    backgroundColor: '#ff6b6b',
+                    pointRadius: 6,
+                    showLine: false
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { labels: { color: "white" } } },
+            scales: {
+                x: { ticks: { color: "white" }, title: { display: true, text: 'Temperatura (°C)', color: "white" }},
+                y: { ticks: { color: "white" }, title: { display: true, text: 'Resistencia (Ω)', color: "white" }}
+            }
+        }
+    });
 }
 
 function calcular(){
@@ -186,35 +245,14 @@ function calcular(){
 
     display.innerHTML = tempC.toFixed(2) + " °C";
 
-    // Barra proporcional -20 a 100°C
     let porcentaje = ((tempC + 20) / 120) * 100;
     porcentaje = Math.max(0, Math.min(100, porcentaje));
     bar.style.width = porcentaje + "%";
 
-    // Colores inteligentes
-    if (tempC < 2){
-        display.style.color = "#00b4d8";
-        bar.style.background = "#00b4d8";
-    }
-    else if (tempC >= 2 && tempC <= 45){
-        display.style.color = "#4cc9f0";
-        bar.style.background = "#4cc9f0";
-    }
-    else if (tempC > 45){
-        display.style.color = "#ff6b6b";
-        bar.style.background = "#ff6b6b";
-    }
-
-    if (tempC < -40 || tempC > 120){
-        display.innerHTML = "FUERA RANGO";
-        display.style.color = "#ff4d6d";
-        bar.style.width = "0%";
-    }
+    generarGrafica(tipo, beta, tempC);
 }
 
 </script>
 
 </body>
 </html>
-
-
