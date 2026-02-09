@@ -184,6 +184,17 @@ function generarGrafica(tipo, beta, tempActual){
         resistencias.push(R);
     }
 
+    // Calculamos resistencia exacta de la medición
+    let Rmedicion;
+    if(tipo.includes("NTC")){
+        let T0 = 298.15;
+        let Tk = tempActual + 273.15;
+        Rmedicion = R0 * Math.exp(beta * (1/Tk - 1/T0));
+    } else {
+        let alpha = 0.00385;
+        Rmedicion = R0 * (1 + alpha * tempActual);
+    }
+
     if(chart) chart.destroy();
 
     chart = new Chart(document.getElementById('grafica'), {
@@ -201,11 +212,12 @@ function generarGrafica(tipo, beta, tempActual){
                 },
                 {
                     label: 'Medición actual',
-                    data: temps.map(t => t === Math.round(tempActual) ? resistencias[t+20] : null),
+                    data: [{x: tempActual, y: Rmedicion}],
                     borderColor: '#ff6b6b',
                     backgroundColor: '#ff6b6b',
                     pointRadius: 6,
-                    showLine: false
+                    showLine: false,
+                    parsing: false
                 }
             ]
         },
@@ -213,13 +225,21 @@ function generarGrafica(tipo, beta, tempActual){
             responsive: true,
             plugins: { legend: { labels: { color: "white" } } },
             scales: {
-                x: { ticks: { color: "white" }, title: { display: true, text: 'Temperatura (°C)', color: "white" }},
-                y: { ticks: { color: "white" }, title: { display: true, text: 'Resistencia (Ω)', color: "white" }}
+                x: { 
+                    type: 'linear',
+                    min: -20,
+                    max: 100,
+                    ticks: { color: "white" },
+                    title: { display: true, text: 'Temperatura (°C)', color: "white" }
+                },
+                y: { 
+                    ticks: { color: "white" },
+                    title: { display: true, text: 'Resistencia (Ω)', color: "white" }
+                }
             }
         }
     });
 }
-
 function calcular(){
 
     let tipo = document.getElementById("tipo").value;
@@ -256,3 +276,4 @@ function calcular(){
 
 </body>
 </html>
+
