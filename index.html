@@ -145,6 +145,14 @@ button {
 <input type="number" id="beta" value="3435">
 
 <button onclick="calcular()">MEDIR</button>
+<hr style="margin:20px 0; border-color:#1b263b;">
+
+<label>Temperatura para calcular Resistencia (°C)</label>
+<input type="number" id="tempInversa" placeholder="Ej: 25">
+
+<button onclick="calcularInversa()">CALCULAR Ω</button>
+
+<div id="resultadoInverso" style="margin-top:10px; font-size:14px; color:#4cc9f0;"></div>
 
 <div id="sugerencia" style="margin-top:10px; font-size:12px; color:#ffd166;"></div>
 
@@ -275,6 +283,32 @@ document.getElementById("simTemp").addEventListener("input",function(){
 
 function calcular(){
 
+  let tipo = document.getElementById("tipo").value;
+    let tempC = parseFloat(document.getElementById("tempInversa").value);
+    let beta = parseFloat(document.getElementById("beta").value);
+    let resultadoDiv = document.getElementById("resultadoInverso");
+
+    if(isNaN(tempC)){
+        resultadoDiv.innerHTML = "Introduce una temperatura válida";
+        return;
+    }
+
+    let R0 = parseInt(tipo.split("_")[1]);
+    let resistencia;
+
+    if(tipo.includes("NTC")){
+        let T0 = 298.15;
+        let Tk = tempC + 273.15;
+        resistencia = R0 * Math.exp(beta * (1/Tk - 1/T0));
+    } else {
+        let alpha = 0.00385;
+        resistencia = R0 * (1 + alpha * tempC);
+    }
+
+    resultadoDiv.innerHTML = 
+        "Resistencia aproximada: <strong>" + 
+        resistencia.toFixed(2) + " Ω</strong>";
+}
     let tipoSeleccionado = document.getElementById("tipo");
     let tipoActual = tipoSeleccionado.value;
     let R = parseFloat(document.getElementById("resistencia").value);
@@ -326,6 +360,7 @@ function calcular(){
 
 </body>
 </html>
+
 
 
 
