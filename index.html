@@ -5,124 +5,203 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BOTTY TECH TOOLBOX</title>
 
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f2027">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
-body{
-  background:#0f2027;
-  font-family:Segoe UI;
+body {
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  font-family: 'Segoe UI', sans-serif;
+  margin:0;
+  padding-top:70px;
   display:flex;
   justify-content:center;
-  align-items:center;
   min-height:100vh;
   color:white;
 }
 
-.container{
+.topmenu{
+  position:fixed;
+  top:10px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  gap:10px;
+  z-index:999;
+}
+
+.topmenu button{
+  padding:8px 15px;
+  border:none;
+  border-radius:10px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.btn-sondas{ background:#4cc9f0; }
+.btn-comp{ background:#f2c200; }
+
+.container { 
   width:95%;
   max-width:600px;
 }
 
-.menu{
-  display:flex;
-  gap:10px;
-  margin-bottom:15px;
-}
-
-.menu button{
-  flex:1;
-  padding:12px;
-  border:none;
-  border-radius:15px;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-.btn-sondas{ background:#4cc9f0; color:#001d3d; }
-.btn-compresor{ background:#f2c200; color:#000; }
-
-.module{
-  display:none;
-  background:#1b263b;
-  padding:20px;
-  border-radius:20px;
-}
-
+.module{ display:none; }
 .active{ display:block; }
 
-.display{
-  background:#000;
-  color:#00ff66;
-  font-size:40px;
-  text-align:right;
-  padding:15px;
-  border-radius:10px;
-  margin-bottom:15px;
+.brand {
+  text-align: center;
+  font-weight: bold;
+  font-size: 18px;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+  color: #4cc9f0;
 }
 
-input{
+.display {
+  background: #001d3d;
+  font-size: 65px;
+  text-align: right;
+  padding: 20px;
+  border-radius: 15px;
+  margin-bottom: 15px;
+  box-shadow: inset 0 0 15px #000;
+}
+
+.bar-container {
+  background: #1b263b;
+  height: 12px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  width: 0%;
+  background: #4cc9f0;
+  transition: 0.4s;
+}
+
+canvas { margin-top:20px; }
+
+label {
+  font-size: 13px;
+  color: #a9d6e5;
+}
+
+select, input {
   width:100%;
-  padding:8px;
+  padding:10px;
   margin:8px 0;
-  border-radius:10px;
+  border-radius:15px;
   border:none;
+  background:#1b263b;
+  color:white;
 }
 
 button.calc{
   width:100%;
-  padding:12px;
-  margin-top:10px;
+  padding:14px;
+  border-radius:25px;
   border:none;
-  border-radius:15px;
+  background:#4cc9f0;
+  color:#001d3d;
   font-weight:bold;
+  font-size:16px;
+  margin-top:15px;
   cursor:pointer;
 }
 
-.result{
-  background:#000;
-  color:#00ff66;
-  padding:10px;
-  margin-top:10px;
-  border-radius:10px;
+.footer{
+  text-align:center;
+  font-size:11px;
+  margin-top:15px;
+  color:#89c2d9;
 }
 </style>
 </head>
 
 <body>
 
+<div class="topmenu">
+<button class="btn-sondas" onclick="mostrar('sondas')">❄️ SONDAS</button>
+<button class="btn-comp" onclick="mostrar('compresor')">💨 COMPRESOR</button>
+</div>
+
 <div class="container">
 
-<h2 style="text-align:center;">BOTTY TECH TOOLBOX ⚙️</h2>
-
-<div class="menu">
-<button class="btn-sondas" onclick="mostrar('sondas')">❄️ SONDAS</button>
-<button class="btn-compresor" onclick="mostrar('compresor')">💨 COMPRESOR</button>
-</div>
-
-<!-- MODULO SONDAS -->
+<!-- ================== SONDAS PRO ================== -->
 <div id="sondas" class="module active">
 
-<div class="display" id="displaySonda">0 °C</div>
+<div class="brand">BOTTY HVAC TOOL ❄️</div>
 
-<input type="number" id="resistencia" placeholder="Resistencia Ω">
-<input type="number" id="beta" value="3435" placeholder="Beta">
+<div class="display" id="display">0.00 °C</div>
 
-<button class="calc btn-sondas" onclick="calcularSonda()">MEDIR</button>
+<div class="bar-container">
+<div class="bar" id="bar"></div>
+</div>
 
-<div class="result" id="resultadoSonda"></div>
+<canvas id="grafica"></canvas>
+
+<label>Simulación Temperatura</label>
+<input type="range" id="simTemp" min="-20" max="100" value="25" step="1">
+
+<label>Tipo de Sonda</label>
+<select id="tipo">
+<option value="NTC_1000">NTC 1K</option>
+<option value="NTC_10000">NTC 10K</option>
+<option value="NTC_25000">NTC 25K</option>
+<option value="PTC_1000">PTC 1K</option>
+<option value="PTC_10000">PTC 10K</option>
+<option value="PTC_25000">PTC 25K</option>
+</select>
+
+<label>Resistencia medida (Ω)</label>
+<input type="number" id="resistencia">
+
+<label>Beta (NTC)</label>
+<input type="number" id="beta" value="3435">
+
+<button class="calc" onclick="calcular()">MEDIR</button>
+
+<hr style="margin:20px 0; border-color:#1b263b;">
+
+<label>Temperatura → Calcular Ω</label>
+<input type="number" id="tempInversa">
+
+<button class="calc" onclick="calcularInversa()">CALCULAR Ω</button>
+
+<div id="resultadoInverso" style="margin-top:10px;"></div>
+<div id="sugerencia" style="margin-top:10px;"></div>
+
+<div class="footer">
+Zona normal 2°C – 45°C
+</div>
 
 </div>
 
-<!-- MODULO COMPRESOR -->
+<!-- ================== COMPRESOR ================== -->
 <div id="compresor" class="module">
+
+<div class="brand" style="color:#f2c200;">BOTTY COMPRESSOR TOOL 💨</div>
 
 <div class="display" id="displayComp">0 L/min</div>
 
-<input type="number" id="volumen" placeholder="Volumen tanque (L)">
-<input type="number" id="pFinal" placeholder="Presión final (bar)">
-<input type="number" id="tiempo" placeholder="Tiempo (segundos)">
+<label>Volumen tanque (L)</label>
+<input type="number" id="volumen">
 
-<button class="calc btn-compresor" onclick="calcularCompresor()">CALCULAR</button>
+<label>Presión final (bar)</label>
+<input type="number" id="pFinal">
 
-<div class="result" id="resultadoComp"></div>
+<label>Tiempo (segundos)</label>
+<input type="number" id="tiempo">
+
+<button class="calc" style="background:#f2c200;color:#000;" onclick="calcularCompresor()">CALCULAR</button>
+
+<div id="resultadoComp" style="margin-top:10px;"></div>
 
 </div>
 
@@ -130,45 +209,149 @@ button.calc{
 
 <script>
 
+// ===== CAMBIO MODULO =====
 function mostrar(id){
 document.getElementById("sondas").classList.remove("active");
 document.getElementById("compresor").classList.remove("active");
 document.getElementById(id).classList.add("active");
 }
 
-// -------- SONDAS --------
-function calcularSonda(){
-let R = parseFloat(document.getElementById("resistencia").value);
-let beta = parseFloat(document.getElementById("beta").value);
-if(!R) return;
+// ===== SONDAS =====
+let chart;
 
-let R0 = 1000;
-let T0 = 298.15;
-let tempK = 1 / ((1/T0) + (1/beta) * Math.log(R/R0));
-let tempC = tempK - 273.15;
-
-document.getElementById("displaySonda").innerHTML = tempC.toFixed(1)+" °C";
-document.getElementById("resultadoSonda").innerHTML =
-"Temperatura estimada: "+tempC.toFixed(2)+" °C";
+function calcNTC(R,R0,beta){
+let T0=298.15;
+let tempK=1/((1/T0)+(1/beta)*Math.log(R/R0));
+return tempK-273.15;
 }
 
-// -------- COMPRESOR --------
+function calcPTC(R,R0){
+let alpha=0.00385;
+return (R-R0)/(R0*alpha);
+}
+
+function actualizarDisplay(tempC){
+let display=document.getElementById("display");
+let bar=document.getElementById("bar");
+
+display.innerHTML=tempC.toFixed(2)+" °C";
+
+let porcentaje=((tempC+20)/120)*100;
+porcentaje=Math.max(0,Math.min(100,porcentaje));
+bar.style.width=porcentaje+"%";
+
+if(tempC<2) bar.style.background="#00b4d8";
+else if(tempC<=45) bar.style.background="#4cc9f0";
+else bar.style.background="#ff6b6b";
+}
+
+function generarGrafica(tipo,beta,tempActual){
+
+let R0=parseInt(tipo.split("_")[1]);
+let temps=[],resistencias=[];
+
+for(let t=-20;t<=100;t++){
+let R;
+if(tipo.includes("NTC")){
+let T0=298.15;
+let Tk=t+273.15;
+R=R0*Math.exp(beta*(1/Tk-1/T0));
+}else{
+let alpha=0.00385;
+R=R0*(1+alpha*t);
+}
+temps.push(t);
+resistencias.push(R);
+}
+
+if(chart) chart.destroy();
+
+chart=new Chart(document.getElementById("grafica"),{
+type:'line',
+data:{
+datasets:[{
+data:temps.map((t,i)=>({x:t,y:resistencias[i]})),
+borderColor:'#4cc9f0',
+fill:false,
+parsing:false
+}]
+},
+options:{
+responsive:true,
+scales:{
+x:{type:'linear',min:-20,max:100},
+y:{}
+}
+}
+});
+}
+
+function calcular(){
+
+let tipo=document.getElementById("tipo").value;
+let R=parseFloat(document.getElementById("resistencia").value);
+let beta=parseFloat(document.getElementById("beta").value);
+
+if(!R) return;
+
+let R0=parseInt(tipo.split("_")[1]);
+let temp=tipo.includes("NTC")?calcNTC(R,R0,beta):calcPTC(R,R0);
+
+actualizarDisplay(temp);
+generarGrafica(tipo,beta,temp);
+}
+
+function calcularInversa(){
+
+let tipo=document.getElementById("tipo").value;
+let temp=parseFloat(document.getElementById("tempInversa").value);
+let beta=parseFloat(document.getElementById("beta").value);
+
+if(isNaN(temp)) return;
+
+let R0=parseInt(tipo.split("_")[1]);
+let resistencia;
+
+if(tipo.includes("NTC")){
+let T0=298.15;
+let Tk=temp+273.15;
+resistencia=R0*Math.exp(beta*(1/Tk-1/T0));
+}else{
+let alpha=0.00385;
+resistencia=R0*(1+alpha*temp);
+}
+
+document.getElementById("resultadoInverso").innerHTML=
+resistencia.toFixed(2)+" Ω";
+}
+
+document.getElementById("simTemp").addEventListener("input",function(){
+let tipo=document.getElementById("tipo").value;
+let beta=parseFloat(document.getElementById("beta").value);
+let t=parseFloat(this.value);
+actualizarDisplay(t);
+generarGrafica(tipo,beta,t);
+});
+
+// ===== COMPRESOR =====
 function calcularCompresor(){
 
-let V = parseFloat(document.getElementById("volumen").value);
-let P = parseFloat(document.getElementById("pFinal").value);
-let tSeg = parseFloat(document.getElementById("tiempo").value);
+let V=parseFloat(document.getElementById("volumen").value);
+let P=parseFloat(document.getElementById("pFinal").value);
+let tSeg=parseFloat(document.getElementById("tiempo").value);
 
-if(!V || !P || !tSeg) return;
+if(!V||!P||!tSeg) return;
 
-let tMin = tSeg / 60;
-let caudal = (V * P) / tMin;
-let m3h = (caudal / 1000) * 60;
-let HP = caudal / 92;
-let kW = HP * 0.736;
+let tMin=tSeg/60;
+let caudal=(V*P)/tMin;
+let m3h=(caudal/1000)*60;
+let HP=caudal/92;
+let kW=HP*0.736;
 
-document.getElementById("displayComp").innerHTML = caudal.toFixed(0)+" L/min";
-document.getElementById("resultadoComp").innerHTML =
+document.getElementById("displayComp").innerHTML=
+caudal.toFixed(0)+" L/min";
+
+document.getElementById("resultadoComp").innerHTML=
 m3h.toFixed(1)+" m³/h<br>"+
 kW.toFixed(2)+" kW<br>"+
 HP.toFixed(1)+" CV";
