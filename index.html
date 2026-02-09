@@ -3,110 +3,85 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BOTTY HVAC TOOL</title>
-
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0f2027">
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<title>BOTTY TECH TOOLBOX</title>
 
 <style>
-body {
-  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-  font-family: 'Segoe UI', sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  padding: 10px;
-  color: white;
+body{
+  background:#0f2027;
+  font-family:Segoe UI;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  color:white;
 }
 
-.container { 
-  background: #0d1b2a;
-  width: 95%;
-  max-width: 600px;
-  padding: 35px;
-  border-radius: 30px;
-  box-shadow: 0 25px 50px rgba(0,0,0,0.6);
-  border: 3px solid #1b263b;
+.container{
+  width:95%;
+  max-width:600px;
 }
 
-.brand {
-  text-align: center;
-  font-weight: bold;
-  font-size: 18px;
-  letter-spacing: 2px;
-  margin-bottom: 10px;
-  color: #4cc9f0;
+.menu{
+  display:flex;
+  gap:10px;
+  margin-bottom:15px;
 }
 
-.display {
-  background: #001d3d;
-  font-size: 65px;
-  text-align: right;
-  padding: 20px;
-  border-radius: 15px;
-  margin-bottom: 15px;
-  box-shadow: inset 0 0 15px #000;
+.menu button{
+  flex:1;
+  padding:12px;
+  border:none;
+  border-radius:15px;
+  font-weight:bold;
+  cursor:pointer;
 }
 
-.bar-container {
-  background: #1b263b;
-  height: 12px;
-  border-radius: 10px;
-  margin-bottom: 20px;
-  overflow: hidden;
+.btn-sondas{ background:#4cc9f0; color:#001d3d; }
+.btn-compresor{ background:#f2c200; color:#000; }
+
+.module{
+  display:none;
+  background:#1b263b;
+  padding:20px;
+  border-radius:20px;
 }
 
-.bar {
-  height: 100%;
-  width: 0%;
-  background: #4cc9f0;
-  transition: 0.4s;
+.active{ display:block; }
+
+.display{
+  background:#000;
+  color:#00ff66;
+  font-size:40px;
+  text-align:right;
+  padding:15px;
+  border-radius:10px;
+  margin-bottom:15px;
 }
 
-canvas {
-  margin-top: 20px;
+input{
+  width:100%;
+  padding:8px;
+  margin:8px 0;
+  border-radius:10px;
+  border:none;
 }
 
-input[type="range"] {
-  margin-top: 10px;
+button.calc{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border:none;
+  border-radius:15px;
+  font-weight:bold;
+  cursor:pointer;
 }
 
-label {
-  font-size: 13px;
-  color: #a9d6e5;
-}
-
-select, input {
-  width: 100%;
-  padding: 10px;
-  margin: 8px 0;
-  border-radius: 15px;
-  border: none;
-  background: #1b263b;
-  color: white;
-}
-
-button {
-  width: 100%;
-  padding: 14px;
-  border-radius: 25px;
-  border: none;
-  background: #4cc9f0;
-  color: #001d3d;
-  font-weight: bold;
-  font-size: 16px;
-  margin-top: 15px;
-  cursor: pointer;
-}
-
-.footer {
-  text-align: center;
-  font-size: 11px;
-  margin-top: 15px;
-  color: #89c2d9;
+.result{
+  background:#000;
+  color:#00ff66;
+  padding:10px;
+  margin-top:10px;
+  border-radius:10px;
 }
 </style>
 </head>
@@ -115,266 +90,91 @@ button {
 
 <div class="container">
 
-<div class="brand">BOTTY HVAC TOOL ❄️</div>
+<h2 style="text-align:center;">BOTTY TECH TOOLBOX ⚙️</h2>
 
-<div class="display" id="display">0.00 °C</div>
-
-<div class="bar-container">
-  <div class="bar" id="bar"></div>
+<div class="menu">
+<button class="btn-sondas" onclick="mostrar('sondas')">❄️ SONDAS</button>
+<button class="btn-compresor" onclick="mostrar('compresor')">💨 COMPRESOR</button>
 </div>
 
-<canvas id="grafica"></canvas>
+<!-- MODULO SONDAS -->
+<div id="sondas" class="module active">
 
-<label>Simulación Temperatura (Modo Formación)</label>
-<input type="range" id="simTemp" min="-20" max="100" value="25" step="1">
+<div class="display" id="displaySonda">0 °C</div>
 
-<label>Tipo de Sonda</label>
-<select id="tipo">
-  <option value="NTC_1000">NTC 1K</option>
-  <option value="NTC_10000">NTC 10K</option>
-  <option value="NTC_25000">NTC 25K</option>
-  <option value="PTC_1000">PTC 1K</option>
-  <option value="PTC_10000">PTC 10K</option>
-  <option value="PTC_25000">PTC 25K</option>
-</select>
+<input type="number" id="resistencia" placeholder="Resistencia Ω">
+<input type="number" id="beta" value="3435" placeholder="Beta">
 
-<label>Resistencia medida (Ω)</label>
-<input type="number" id="resistencia" placeholder="Ej: 589">
+<button class="calc btn-sondas" onclick="calcularSonda()">MEDIR</button>
 
-<label>Beta (solo NTC - default 3435)</label>
-<input type="number" id="beta" value="3435">
+<div class="result" id="resultadoSonda"></div>
 
-<button onclick="calcular()">MEDIR</button>
-<hr style="margin:20px 0; border-color:#1b263b;">
+</div>
 
-<label>Temperatura para calcular Resistencia (°C)</label>
-<input type="number" id="tempInversa" placeholder="Ej: 25">
+<!-- MODULO COMPRESOR -->
+<div id="compresor" class="module">
 
-<button onclick="calcularInversa()">CALCULAR Ω</button>
+<div class="display" id="displayComp">0 L/min</div>
 
-<div id="resultadoInverso" style="margin-top:10px; font-size:14px; color:#4cc9f0;"></div>
+<input type="number" id="volumen" placeholder="Volumen tanque (L)">
+<input type="number" id="pFinal" placeholder="Presión final (bar)">
+<input type="number" id="tiempo" placeholder="Tiempo (segundos)">
 
-<div id="sugerencia" style="margin-top:10px; font-size:12px; color:#ffd166;"></div>
+<button class="calc btn-compresor" onclick="calcularCompresor()">CALCULAR</button>
 
-<div class="footer">
-Modo Secador Frigorífico • Azul <2°C • Verde 2-45°C • Rojo >45°C
+<div class="result" id="resultadoComp"></div>
+
 </div>
 
 </div>
 
 <script>
 
-let chart;
-
-function calcNTC(R, R0, beta){
-    let T0 = 298.15;
-    let tempK = 1 / ((1/T0) + (1/beta) * Math.log(R/R0));
-    return tempK - 273.15;
+function mostrar(id){
+document.getElementById("sondas").classList.remove("active");
+document.getElementById("compresor").classList.remove("active");
+document.getElementById(id).classList.add("active");
 }
 
-function calcPTC(R, R0){
-    let alpha = 0.00385;
-    return (R - R0) / (R0 * alpha);
+// -------- SONDAS --------
+function calcularSonda(){
+let R = parseFloat(document.getElementById("resistencia").value);
+let beta = parseFloat(document.getElementById("beta").value);
+if(!R) return;
+
+let R0 = 1000;
+let T0 = 298.15;
+let tempK = 1 / ((1/T0) + (1/beta) * Math.log(R/R0));
+let tempC = tempK - 273.15;
+
+document.getElementById("displaySonda").innerHTML = tempC.toFixed(1)+" °C";
+document.getElementById("resultadoSonda").innerHTML =
+"Temperatura estimada: "+tempC.toFixed(2)+" °C";
 }
 
-function generarGrafica(tipo, beta, tempActual){
+// -------- COMPRESOR --------
+function calcularCompresor(){
 
-    let R0 = parseInt(tipo.split("_")[1]);
-    let temps = [];
-    let resistencias = [];
+let V = parseFloat(document.getElementById("volumen").value);
+let P = parseFloat(document.getElementById("pFinal").value);
+let tSeg = parseFloat(document.getElementById("tiempo").value);
 
-    for(let t = -20; t <= 100; t++){
-        let R;
-        if(tipo.includes("NTC")){
-            let T0 = 298.15;
-            let Tk = t + 273.15;
-            R = R0 * Math.exp(beta * (1/Tk - 1/T0));
-        } else {
-            let alpha = 0.00385;
-            R = R0 * (1 + alpha * t);
-        }
-        temps.push(t);
-        resistencias.push(R);
-    }
+if(!V || !P || !tSeg) return;
 
-    let Rmedicion;
-    if(tipo.includes("NTC")){
-        let T0 = 298.15;
-        let Tk = tempActual + 273.15;
-        Rmedicion = R0 * Math.exp(beta * (1/Tk - 1/T0));
-    } else {
-        let alpha = 0.00385;
-        Rmedicion = R0 * (1 + alpha * tempActual);
-    }
+let tMin = tSeg / 60;
+let caudal = (V * P) / tMin;
+let m3h = (caudal / 1000) * 60;
+let HP = caudal / 92;
+let kW = HP * 0.736;
 
-    if(chart) chart.destroy();
-
-    chart = new Chart(document.getElementById('grafica'), {
-        type: 'line',
-        data: {
-            datasets: [
-                {
-                    label: 'Curva de la sonda',
-                    data: temps.map((t,i)=>({x:t,y:resistencias[i]})),
-                    borderColor: '#4cc9f0',
-                    borderWidth: 2,
-                    fill: false,
-                    parsing:false
-                },
-                {
-                    label: 'Medición actual',
-                    data: [{x: tempActual, y: Rmedicion}],
-                    backgroundColor: '#ff6b6b',
-                    borderColor: '#ff6b6b',
-                    pointRadius: 6,
-                    showLine:false,
-                    parsing:false
-                }
-            ]
-        },
-        options: {
-            responsive:true,
-            plugins:{ legend:{ labels:{ color:"white" } } },
-            scales:{
-                x:{
-                    type:'linear',
-                    min:-20,
-                    max:100,
-                    ticks:{ color:"white" },
-                    title:{ display:true, text:'Temperatura (°C)', color:"white" },
-                    grid:{ color:(ctx)=>{
-                        let v=ctx.tick.value;
-                        if(v<2) return "rgba(0,180,216,0.2)";
-                        if(v<=45) return "rgba(76,201,240,0.15)";
-                        return "rgba(255,107,107,0.2)";
-                    }}
-                },
-                y:{
-                    ticks:{ color:"white" },
-                    title:{ display:true, text:'Resistencia (Ω)', color:"white" }
-                }
-            }
-        }
-    });
+document.getElementById("displayComp").innerHTML = caudal.toFixed(0)+" L/min";
+document.getElementById("resultadoComp").innerHTML =
+m3h.toFixed(1)+" m³/h<br>"+
+kW.toFixed(2)+" kW<br>"+
+HP.toFixed(1)+" CV";
 }
-
-function actualizarDisplay(tempC){
-    let display=document.getElementById("display");
-    let bar=document.getElementById("bar");
-
-    display.innerHTML=tempC.toFixed(2)+" °C";
-
-    let porcentaje=((tempC+20)/120)*100;
-    porcentaje=Math.max(0,Math.min(100,porcentaje));
-    bar.style.width=porcentaje+"%";
-
-    if(tempC<2){ bar.style.background="#00b4d8"; }
-    else if(tempC<=45){ bar.style.background="#4cc9f0"; }
-    else{ bar.style.background="#ff6b6b"; }
-}
-
-document.getElementById("simTemp").addEventListener("input",function(){
-    let tipo=document.getElementById("tipo").value;
-    let beta=parseFloat(document.getElementById("beta").value);
-    let t=parseFloat(this.value);
-    actualizarDisplay(t);
-    generarGrafica(tipo,beta,t);
-});
-
-// ----------- MEDIR (Ω → °C) -----------
-function calcular(){
-
-    let tipoSeleccionado = document.getElementById("tipo");
-    let tipoActual = tipoSeleccionado.value;
-    let R = parseFloat(document.getElementById("resistencia").value);
-    let beta = parseFloat(document.getElementById("beta").value);
-    let sugerenciaDiv = document.getElementById("sugerencia");
-
-    if(!R || R <= 0) return;
-
-    let R0 = parseInt(tipoActual.split("_")[1]);
-    let tempActual;
-
-    if(tipoActual.includes("NTC")){
-        tempActual = calcNTC(R,R0,beta);
-    } else {
-        tempActual = calcPTC(R,R0);
-    }
-
-    actualizarDisplay(tempActual);
-    generarGrafica(tipoActual,beta,tempActual);
-
-    // --- SUGERENCIA SOLO PARA NTC ---
-    let opciones = ["NTC_1000","NTC_10000","NTC_25000"];
-    let mejorOpcion = tipoActual;
-    let menorDiferencia = Infinity;
-
-    for(let opcion of opciones){
-
-        let R0test = parseInt(opcion.split("_")[1]);
-        let tempTest = calcNTC(R,R0test,beta);
-
-        if(tempTest > -40 && tempTest < 120){
-
-            let diferencia = Math.abs(tempTest - 25);
-
-            if(diferencia < menorDiferencia){
-                menorDiferencia = diferencia;
-                mejorOpcion = opcion;
-            }
-        }
-    }
-
-    if(mejorOpcion !== tipoActual){
-        sugerenciaDiv.innerHTML =
-        "🔎 Sugerencia: el valor encaja mejor con " +
-        mejorOpcion.replace("_"," ");
-    } else {
-        sugerenciaDiv.innerHTML = "";
-    }
-}
-
-
-// ----------- CÁLCULO INVERSO (°C → Ω) -----------
-function calcularInversa(){
-
-    let tipo = document.getElementById("tipo").value;
-    let tempC = parseFloat(document.getElementById("tempInversa").value);
-    let beta = parseFloat(document.getElementById("beta").value);
-    let resultadoDiv = document.getElementById("resultadoInverso");
-
-    if(isNaN(tempC)){
-        resultadoDiv.innerHTML = "Introduce una temperatura válida";
-        return;
-    }
-
-    let R0 = parseInt(tipo.split("_")[1]);
-    let resistencia;
-
-    if(tipo.includes("NTC")){
-        let T0 = 298.15;
-        let Tk = tempC + 273.15;
-        resistencia = R0 * Math.exp(beta * (1/Tk - 1/T0));
-    } else {
-        let alpha = 0.00385;
-        resistencia = R0 * (1 + alpha * tempC);
-    }
-
-    resultadoDiv.innerHTML =
-        "Resistencia aproximada: <strong>" +
-        resistencia.toFixed(2) + " Ω</strong>";
-}
-
-
 
 </script>
 
 </body>
 </html>
-
-
-
-
-
-
-
