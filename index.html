@@ -281,34 +281,9 @@ document.getElementById("simTemp").addEventListener("input",function(){
     generarGrafica(tipo,beta,t);
 });
 
+// ----------- MEDIR (Ω → °C) -----------
 function calcular(){
 
-  let tipo = document.getElementById("tipo").value;
-    let tempC = parseFloat(document.getElementById("tempInversa").value);
-    let beta = parseFloat(document.getElementById("beta").value);
-    let resultadoDiv = document.getElementById("resultadoInverso");
-
-    if(isNaN(tempC)){
-        resultadoDiv.innerHTML = "Introduce una temperatura válida";
-        return;
-    }
-
-    let R0 = parseInt(tipo.split("_")[1]);
-    let resistencia;
-
-    if(tipo.includes("NTC")){
-        let T0 = 298.15;
-        let Tk = tempC + 273.15;
-        resistencia = R0 * Math.exp(beta * (1/Tk - 1/T0));
-    } else {
-        let alpha = 0.00385;
-        resistencia = R0 * (1 + alpha * tempC);
-    }
-
-    resultadoDiv.innerHTML = 
-        "Resistencia aproximada: <strong>" + 
-        resistencia.toFixed(2) + " Ω</strong>";
-}
     let tipoSeleccionado = document.getElementById("tipo");
     let tipoActual = tipoSeleccionado.value;
     let R = parseFloat(document.getElementById("resistencia").value);
@@ -317,14 +292,19 @@ function calcular(){
 
     if(!R || R <= 0) return;
 
-    // --- Cálculo con el tipo seleccionado ---
     let R0 = parseInt(tipoActual.split("_")[1]);
-    let tempActual = calcNTC(R,R0,beta);
+    let tempActual;
+
+    if(tipoActual.includes("NTC")){
+        tempActual = calcNTC(R,R0,beta);
+    } else {
+        tempActual = calcPTC(R,R0);
+    }
 
     actualizarDisplay(tempActual);
     generarGrafica(tipoActual,beta,tempActual);
 
-    // --- Autodetección solo como sugerencia ---
+    // --- SUGERENCIA SOLO PARA NTC ---
     let opciones = ["NTC_1000","NTC_10000","NTC_25000"];
     let mejorOpcion = tipoActual;
     let menorDiferencia = Infinity;
@@ -346,12 +326,43 @@ function calcular(){
     }
 
     if(mejorOpcion !== tipoActual){
-        sugerenciaDiv.innerHTML = 
-        "🔎 Sugerencia: el valor encaja mejor con " + 
+        sugerenciaDiv.innerHTML =
+        "🔎 Sugerencia: el valor encaja mejor con " +
         mejorOpcion.replace("_"," ");
     } else {
         sugerenciaDiv.innerHTML = "";
     }
+}
+
+
+// ----------- CÁLCULO INVERSO (°C → Ω) -----------
+function calcularInversa(){
+
+    let tipo = document.getElementById("tipo").value;
+    let tempC = parseFloat(document.getElementById("tempInversa").value);
+    let beta = parseFloat(document.getElementById("beta").value);
+    let resultadoDiv = document.getElementById("resultadoInverso");
+
+    if(isNaN(tempC)){
+        resultadoDiv.innerHTML = "Introduce una temperatura válida";
+        return;
+    }
+
+    let R0 = parseInt(tipo.split("_")[1]);
+    let resistencia;
+
+    if(tipo.includes("NTC")){
+        let T0 = 298.15;
+        let Tk = tempC + 273.15;
+        resistencia = R0 * Math.exp(beta * (1/Tk - 1/T0));
+    } else {
+        let alpha = 0.00385;
+        resistencia = R0 * (1 + alpha * tempC);
+    }
+
+    resultadoDiv.innerHTML =
+        "Resistencia aproximada: <strong>" +
+        resistencia.toFixed(2) + " Ω</strong>";
 }
 
 
@@ -360,6 +371,7 @@ function calcular(){
 
 </body>
 </html>
+
 
 
 
