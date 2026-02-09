@@ -276,48 +276,57 @@ document.getElementById("simTemp").addEventListener("input",function(){
 function calcular(){
 
     let tipoSeleccionado = document.getElementById("tipo");
+    let tipoActual = tipoSeleccionado.value;
     let R = parseFloat(document.getElementById("resistencia").value);
     let beta = parseFloat(document.getElementById("beta").value);
+    let sugerenciaDiv = document.getElementById("sugerencia");
 
     if(!R || R <= 0) return;
 
-    let opciones = ["NTC_1000","NTC_10000","NTC_25000"];
+    // --- Cálculo con el tipo seleccionado ---
+    let R0 = parseInt(tipoActual.split("_")[1]);
+    let tempActual = calcNTC(R,R0,beta);
 
-    let mejorOpcion = null;
-    let mejorTemp = null;
+    actualizarDisplay(tempActual);
+    generarGrafica(tipoActual,beta,tempActual);
+
+    // --- Autodetección solo como sugerencia ---
+    let opciones = ["NTC_1000","NTC_10000","NTC_25000"];
+    let mejorOpcion = tipoActual;
     let menorDiferencia = Infinity;
 
     for(let opcion of opciones){
 
-        let R0 = parseInt(opcion.split("_")[1]);
-        let temp = calcNTC(R,R0,beta);
+        let R0test = parseInt(opcion.split("_")[1]);
+        let tempTest = calcNTC(R,R0test,beta);
 
-        if(temp > -40 && temp < 120){
+        if(tempTest > -40 && tempTest < 120){
 
-            // Comparamos con temperatura ambiente típica 25°C
-            let diferencia = Math.abs(temp - 25);
+            let diferencia = Math.abs(tempTest - 25);
 
             if(diferencia < menorDiferencia){
                 menorDiferencia = diferencia;
                 mejorOpcion = opcion;
-                mejorTemp = temp;
             }
         }
     }
 
-    // Si encontramos opción lógica
-    if(mejorOpcion){
-        tipoSeleccionado.value = mejorOpcion;
-        actualizarDisplay(mejorTemp);
-        generarGrafica(mejorOpcion,beta,mejorTemp);
+    if(mejorOpcion !== tipoActual){
+        sugerenciaDiv.innerHTML = 
+        "🔎 Sugerencia: el valor encaja mejor con " + 
+        mejorOpcion.replace("_"," ");
+    } else {
+        sugerenciaDiv.innerHTML = "";
     }
 }
+
 
 
 </script>
 
 </body>
 </html>
+
 
 
 
