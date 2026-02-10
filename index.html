@@ -7,26 +7,6 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-.bar-container{
-background:#1b263b;
-height:12px;
-border-radius:10px;
-margin-bottom:20px;
-overflow:hidden;
-}
-
-.bar{
-height:100%;
-width:0%;
-background:#4cc9f0;
-transition:0.4s;
-}
-
-canvas{
-margin-top:20px;
-margin-bottom:20px;
-}
-
 body{
 background:linear-gradient(135deg,#0f1c2b,#1f3c55);
 font-family:Segoe UI;
@@ -44,113 +24,60 @@ padding:35px;
 border-radius:28px;
 width:95%;
 max-width:650px;
-box-shadow:
-inset 0 0 30px rgba(0,0,0,0.6),
-0 25px 60px rgba(0,0,0,0.8);
+box-shadow:inset 0 0 30px rgba(0,0,0,0.6),0 25px 60px rgba(0,0,0,0.8);
 border:3px solid #5c6f80;
 }
 
-h2{
-text-align:center;
-color:#00e0ff;
-margin-bottom:25px;
-}
+h2{text-align:center;color:#00e0ff;margin-bottom:25px;}
 
-.menu{
-display:flex;
-gap:10px;
-margin-bottom:20px;
-}
-
+.menu{display:flex;gap:10px;margin-bottom:20px;}
 .menu button{
-flex:1;
-padding:12px;
-border:none;
-border-radius:12px;
-background:#142c3a;
-color:#00eaff;
-cursor:pointer;
-font-weight:bold;
+flex:1;padding:12px;border:none;border-radius:12px;
+background:#142c3a;color:#00eaff;cursor:pointer;font-weight:bold;
 }
+.menu button:hover{background:#00eaff;color:#00222b;}
 
-.menu button:hover{
-background:#00eaff;
-color:#00222b;
-}
-
-.module{ display:none; }
-.module.active{ display:block; }
+.module{display:none;}
+.module.active{display:block;}
 
 .display{
 background:linear-gradient(180deg,#0a1f2e,#071923);
-color:#00eaff;
-font-size:32px;
-padding:18px;
-border-radius:14px;
-text-align:right;
-margin-bottom:20px;
-font-weight:bold;
-font-family:monospace;
-box-shadow:
-inset 0 0 20px #000,
-0 0 20px rgba(0,234,255,0.25);
+color:#00eaff;font-size:32px;padding:18px;border-radius:14px;
+text-align:right;margin-bottom:20px;font-weight:bold;font-family:monospace;
 border:2px solid #12384a;
 }
 
 input,select{
-width:100%;
-padding:10px;
-margin:8px 0;
-border-radius:10px;
-border:2px solid #1e3a4a;
-background:#142c3a;
-color:#e6f7ff;
+width:100%;padding:10px;margin:8px 0;border-radius:10px;
+border:2px solid #1e3a4a;background:#142c3a;color:#e6f7ff;
 }
 
 button.calc{
-width:100%;
-padding:14px;
-margin-top:15px;
-border:none;
-border-radius:12px;
-background:linear-gradient(180deg,#00eaff,#00bcd4);
-color:#00222b;
-font-weight:bold;
-cursor:pointer;
+width:100%;padding:14px;margin-top:15px;border:none;
+border-radius:12px;background:linear-gradient(180deg,#00eaff,#00bcd4);
+color:#00222b;font-weight:bold;cursor:pointer;
 }
 
 .result{
-background:linear-gradient(180deg,#071923,#04121a);
-padding:15px;
-margin-top:15px;
-border-radius:12px;
-font-family:monospace;
+background:#071923;padding:15px;margin-top:15px;
+border-radius:12px;font-family:monospace;
 border:2px solid #12384a;
 }
 
-.led-row{
-display:flex;
-align-items:center;
-gap:10px;
-margin:10px 0 15px 0;
-}
+.bar-container{background:#1b263b;height:12px;border-radius:10px;margin-bottom:20px;overflow:hidden;}
+.bar{height:100%;width:0%;background:#4cc9f0;transition:0.4s;}
 
-.led{
-width:16px;
-height:16px;
-border-radius:50%;
-background:#222;
-}
+.led-row{display:flex;align-items:center;gap:10px;margin:10px 0 15px 0;}
+.led{width:16px;height:16px;border-radius:50%;background:#222;}
+.led.blue{background:#00eaff;box-shadow:0 0 10px #00eaff;}
+.led.green{background:#00ff9c;box-shadow:0 0 10px #00ff9c;}
+.led.red{background:#ff4d6d;box-shadow:0 0 10px #ff4d6d;}
 
-.led.blue{ background:#00eaff; box-shadow:0 0 10px #00eaff; }
-.led.green{ background:#00ff9c; box-shadow:0 0 10px #00ff9c; }
-.led.red{ background:#ff4d6d; box-shadow:0 0 10px #ff4d6d; }
-
+canvas{margin:20px 0;}
 </style>
 </head>
 
 <body>
-
 <div class="container">
 
 <h2>BOTTY TECH SUITE ⚙️ LAB PRO</h2>
@@ -161,54 +88,37 @@ background:#222;
 <button onclick="mostrar('electrico')">⚡ ELÉCTRICO</button>
 </div>
 
-<!-- ================= SONDAS ================= -->
+<!-- SONDAS -->
 <div id="sondas" class="module active">
+<div class="display" id="displayTemp">0.00 °C</div>
 
-<div class="display" id="display">0.00 °C</div>
-
-<div class="bar-container">
-  <div class="bar" id="bar"></div>
-</div>
-
+<div class="bar-container"><div class="bar" id="bar"></div></div>
 <canvas id="grafica"></canvas>
 
-<label>Simulación Temperatura (Modo Formación)</label>
-<input type="range" id="simTemp" min="-20" max="100" value="25" step="1">
-
-<label>Tipo de Sonda</label>
 <select id="tipo">
-  <option value="NTC_1000">NTC 1K</option>
-  <option value="NTC_10000">NTC 10K</option>
-  <option value="NTC_25000">NTC 25K</option>
-  <option value="PTC_1000">PTC 1K</option>
-  <option value="PTC_10000">PTC 10K</option>
-  <option value="PTC_25000">PTC 25K</option>
+<option value="NTC_1000">NTC 1K</option>
+<option value="NTC_10000">NTC 10K</option>
+<option value="NTC_25000">NTC 25K</option>
+<option value="PTC_1000">PTC 1K</option>
+<option value="PTC_10000">PTC 10K</option>
+<option value="PTC_25000">PTC 25K</option>
 </select>
 
-<label>Resistencia medida (Ω)</label>
-<input type="number" id="resistencia" placeholder="Ej: 589">
+<input type="number" id="resistencia" placeholder="Resistencia Ω">
+<input type="number" id="beta" value="3435" placeholder="Beta">
+<button class="calc" onclick="calcularSonda()">MEDIR</button>
 
-<label>Beta (solo NTC - default 3435)</label>
-<input type="number" id="beta" value="3435">
+<hr>
 
-<button class="calc" onclick="calcular()">MEDIR</button>
-
-<hr style="margin:20px 0;border-color:#12384a;">
-
-<label>Temperatura para calcular Resistencia (°C)</label>
-<input type="number" id="tempInversa">
-
+<input type="number" id="tempInversa" placeholder="Temperatura °C">
 <button class="calc" onclick="calcularInversa()">CALCULAR Ω</button>
 
 <div id="resultadoInverso" class="result"></div>
 <div id="sugerencia" class="result"></div>
-
 </div>
 
-
-<!-- ================= COMPRESOR ================= -->
+<!-- COMPRESOR -->
 <div id="compresor" class="module">
-
 <div class="display" id="displayComp">0 L/min</div>
 
 <input type="number" id="volumen" placeholder="Volumen tanque (L)">
@@ -216,14 +126,11 @@ background:#222;
 <input type="number" id="tiempo" placeholder="Tiempo (segundos)">
 
 <button class="calc" onclick="calcularCompresor()">CALCULAR</button>
-
 <div class="result" id="resultadoComp"></div>
-
 </div>
 
-<!-- ================= ELECTRICO ================= -->
+<!-- ELECTRICO -->
 <div id="electrico" class="module">
-
 <div class="display" id="displayElec">0.0 A</div>
 
 <input type="number" id="kw" placeholder="Potencia (kW)">
@@ -245,368 +152,158 @@ background:#222;
 </div>
 
 <div class="result" id="resultadoElec"></div>
-
 </div>
 
 </div>
 
 <script>
-
 function mostrar(id){
 document.querySelectorAll('.module').forEach(m=>m.classList.remove('active'));
 document.getElementById(id).classList.add('active');
 }
 
-// ---------- SONDAS ----------
-function calcularSonda(){
-let R=parseFloat(document.getElementById("resistencia").value);
-let beta=parseFloat(document.getElementById("beta").value);
-let R0=parseFloat(document.getElementById("tipoSonda").value);
-if(!R) return;
-
-let T0=298.15;
-let tempK=1/((1/T0)+(1/beta)*Math.log(R/R0));
-let tempC=tempK-273.15;
-
-document.getElementById("displaySonda").innerHTML=tempC.toFixed(2)+" °C";
-document.getElementById("resultadoSonda").innerHTML=
-"Temperatura estimada: "+tempC.toFixed(2)+" °C";
-}
-
-// ---------- COMPRESOR ----------
-function calcularCompresor(){
-
-let V=parseFloat(document.getElementById("volumen").value);
-let P=parseFloat(document.getElementById("presion").value);
-let t=parseFloat(document.getElementById("tiempo").value);
-
-if(!V||!P||!t) return;
-
-let tMin=t/60;
-
-// Caudal en L/min
-let caudal=(V*P)/tMin;
-
-// m³/h
-let m3h=(caudal/1000)*60;
-
-// CV reales según tu catálogo (92 L/min por CV)
-let CV=caudal/92;
-
-// kW aproximados
-let kW=CV*0.736;
-
-document.getElementById("displayComp").innerHTML=
-caudal.toFixed(0)+" L/min";
-
-document.getElementById("resultadoComp").innerHTML=
-"Producción: "+caudal.toFixed(0)+" L/min<br>"+
-m3h.toFixed(1)+" m³/h<br><br>"+
-"Motor estimado:<br>"+
-CV.toFixed(1)+" CV<br>"+
-kW.toFixed(2)+" kW";
-}
-
-
-// ---------- ELECTRICO ----------
-function calcularElectrico(){
-
-let kw=parseFloat(document.getElementById("kw").value);
-let amps=parseFloat(document.getElementById("amps").value);
-let L=parseFloat(document.getElementById("longitud").value);
-let arranque=document.getElementById("arranque").value;
-let instalacion=document.getElementById("instalacion").value;
-
-if(!L) return;
-
-let I;
-
-if(amps){
-I=amps;
-}
-else if(kw){
-I=kw*1000/(Math.sqrt(3)*400*0.85*0.9);
-}
-else{
-return;
-}
-
-// Tabla técnica
-let cables=[
-{sec:2.5, Iz:{B1:18,B2:21,C:24,D:20}, R:0.00741},
-{sec:4, Iz:{B1:24,B2:28,C:32,D:26}, R:0.00461},
-{sec:6, Iz:{B1:31,B2:36,C:41,D:34}, R:0.00308},
-{sec:10, Iz:{B1:46,B2:50,C:57,D:52}, R:0.00183},
-{sec:16, Iz:{B1:61,B2:70,C:76,D:67}, R:0.00115},
-{sec:25, Iz:{B1:80,B2:95,C:101,D:89}, R:0.000727},
-{sec:35, Iz:{B1:99,B2:115,C:125,D:110}, R:0.000524},
-{sec:50, Iz:{B1:125,B2:150,C:160,D:140}, R:0.000387}
-];
-
-let seleccion=null;
-let caidaFinal=0;
-
-for(let c of cables){
-
-if(I <= c.Iz[instalacion]){
-
-let deltaV=Math.sqrt(3)*I*L*c.R;
-let porcentaje=(deltaV/400)*100;
-
-if(porcentaje <= 5){
-seleccion=c;
-caidaFinal=porcentaje;
-break;
-}
-}
-}
-
-if(!seleccion){
-document.getElementById("displayElec").innerHTML=
-I.toFixed(1)+" A";
-
-document.getElementById("resultadoElec").innerHTML=
-"<strong>Sección:</strong> "+seleccion.sec+" mm²<br>"+
-"Intensidad admisible ("+instalacion+"): "+seleccion.Iz[instalacion]+" A<br>"+
-"<strong>Caída tensión:</strong> "+caidaFinal.toFixed(2)+" %<br><br>"+
-"<strong>Magnetotérmico:</strong> "+magneto+" A curva D";
-
-"<span style='color:#ff4d6d;'>⚠ Necesaria sección superior a 50 mm²</span>";
-return;
-}
-
-// Magnetotérmico
-let magneto=Math.ceil(I*1.25/5)*5;
-
-// -------- LED caída tensión --------
-let ledColor="";
-let ledTexto="";
-let led = document.getElementById("led");
-let ledText = document.getElementById("ledText");
-
-led.className = "led"; // reset
-ledText.innerHTML = ledTexto;
-
-if(caidaFinal < 3){
-led.classList.add("blue");
-}
-else if(caidaFinal <= 5){
-led.classList.add("green");
-}
-else{
-led.classList.add("red");
-}
-
-
-if(caidaFinal < 3){
-ledColor="#00b4ff";
-ledTexto="🔵 LED azul = correcto (<3% caída)";
-}
-else if(caidaFinal <=5){
-ledColor="#00ff66";
-ledTexto="🟢 LED verde = aceptable (3-5%)";
-}
-else{
-ledColor="#ff4d4d";
-ledTexto="🔴 LED rojo = fuera de norma (>5%)";
-}
-
-document.getElementById("displayElectrico").innerHTML=
-I.toFixed(1)+" A";
-
-document.getElementById("resultadoElectrico").innerHTML=
-"<strong>Sección:</strong> "+seleccion.sec+" mm²<br>"+
-"Intensidad admisible ("+instalacion+"): "+seleccion.Iz[instalacion]+" A<br>"+
-"<strong>Caída tensión:</strong> "+caidaFinal.toFixed(2)+" %<br>"+
-"<span style='color:"+ledColor+"; font-weight:bold;'>"+ledTexto+"</span><br><br>"+
-"<strong>Magnetotérmico:</strong> "+magneto+" A curva D";
-}
-
+/* ---------------- SONDAS ---------------- */
 let chart;
 
-function calcNTC(R, R0, beta){
+function calcNTC(R,R0,beta){
 let T0=298.15;
 let tempK=1/((1/T0)+(1/beta)*Math.log(R/R0));
 return tempK-273.15;
 }
 
 function calcPTC(R,R0){
-let alpha=0.00385;
-return (R-R0)/(R0*alpha);
+return (R-R0)/(R0*0.00385);
 }
 
-function actualizarDisplay(tempC){
-
-let display=document.getElementById("display");
-let bar=document.getElementById("bar");
-
-display.innerHTML=tempC.toFixed(2)+" °C";
-
-let porcentaje=((tempC+20)/120)*100;
-porcentaje=Math.max(0,Math.min(100,porcentaje));
-bar.style.width=porcentaje+"%";
-
-if(tempC<2){
-display.style.color="#00b4d8";
-bar.style.background="#00b4d8";
-}
-else if(tempC<=45){
-display.style.color="#4cc9f0";
-bar.style.background="#4cc9f0";
-}
-else{
-display.style.color="#ff6b6b";
-bar.style.background="#ff6b6b";
-}
-}
-
-function generarGrafica(tipo,beta,tempActual){
-
-let R0=parseInt(tipo.split("_")[1]);
-let temps=[];
-let resistencias=[];
-
-for(let t=-20;t<=100;t++){
-let R;
-if(tipo.includes("NTC")){
-let T0=298.15;
-let Tk=t+273.15;
-R=R0*Math.exp(beta*(1/Tk-1/T0));
-}
-else{
-let alpha=0.00385;
-R=R0*(1+alpha*t);
-}
-temps.push(t);
-resistencias.push(R);
-}
-
-if(chart) chart.destroy();
-
-chart=new Chart(document.getElementById("grafica"),{
-type:"line",
-data:{
-datasets:[
-{
-label:"Curva",
-data:temps.map((t,i)=>({x:t,y:resistencias[i]})),
-borderColor:"#4cc9f0",
-borderWidth:2,
-fill:false,
-parsing:false
-},
-{
-label:"Medición",
-data:[{x:tempActual,y:resistencias[Math.round(tempActual)+20]}],
-backgroundColor:"#ff6b6b",
-borderColor:"#ff6b6b",
-pointRadius:6,
-showLine:false,
-parsing:false
-}
-]
-},
-options:{
-responsive:true,
-plugins:{legend:{labels:{color:"white"}}},
-scales:{
-x:{type:"linear",min:-20,max:100,ticks:{color:"white"}},
-y:{ticks:{color:"white"}}
-}
-}
-});
-}
-
-function calcular(){
-
+function calcularSonda(){
 let tipo=document.getElementById("tipo").value;
 let R=parseFloat(document.getElementById("resistencia").value);
 let beta=parseFloat(document.getElementById("beta").value);
-let sugerenciaDiv=document.getElementById("sugerencia");
-
-if(!R||R<=0) return;
+if(!R) return;
 
 let R0=parseInt(tipo.split("_")[1]);
-let tempC;
+let temp=tipo.includes("NTC")?calcNTC(R,R0,beta):calcPTC(R,R0);
 
-if(tipo.includes("NTC")){
-tempC=calcNTC(R,R0,beta);
-}
-else{
-tempC=calcPTC(R,R0);
-}
+document.getElementById("displayTemp").innerHTML=temp.toFixed(2)+" °C";
 
-actualizarDisplay(tempC);
-generarGrafica(tipo,beta,tempC);
+let porcentaje=((temp+20)/120)*100;
+document.getElementById("bar").style.width=Math.max(0,Math.min(100,porcentaje))+"%";
 
-// Sugerencia automática solo NTC
-let opciones=["NTC_1000","NTC_10000","NTC_25000"];
-let mejorOpcion=tipo;
-let menorDif=Infinity;
-
-for(let op of opciones){
-let R0test=parseInt(op.split("_")[1]);
-let tTest=calcNTC(R,R0test,beta);
-if(tTest>-40&&tTest<120){
-let dif=Math.abs(tTest-25);
-if(dif<menorDif){
-menorDif=dif;
-mejorOpcion=op;
-}
-}
-}
-
-if(mejorOpcion!==tipo){
-sugerenciaDiv.innerHTML=
-"🔎 Sugerencia: encaja mejor con "+mejorOpcion.replace("_"," ");
-}
-else{
-sugerenciaDiv.innerHTML="";
-}
+generarGrafica(tipo,beta,temp);
 }
 
 function calcularInversa(){
-
 let tipo=document.getElementById("tipo").value;
 let temp=parseFloat(document.getElementById("tempInversa").value);
 let beta=parseFloat(document.getElementById("beta").value);
-let resultado=document.getElementById("resultadoInverso");
-
 if(isNaN(temp)) return;
 
 let R0=parseInt(tipo.split("_")[1]);
-let resistencia;
+let R=tipo.includes("NTC")
+?R0*Math.exp(beta*((1/(temp+273.15))-(1/298.15)))
+:R0*(1+0.00385*temp);
 
-if(tipo.includes("NTC")){
-let T0=298.15;
-let Tk=temp+273.15;
-resistencia=R0*Math.exp(beta*(1/Tk-1/T0));
+document.getElementById("resultadoInverso").innerHTML=
+"Resistencia estimada: "+R.toFixed(2)+" Ω";
+}
+
+function generarGrafica(tipo,beta,temp){
+let R0=parseInt(tipo.split("_")[1]);
+let data=[];
+for(let t=-20;t<=100;t++){
+let R=tipo.includes("NTC")
+?R0*Math.exp(beta*((1/(t+273.15))-(1/298.15)))
+:R0*(1+0.00385*t);
+data.push({x:t,y:R});
+}
+if(chart) chart.destroy();
+chart=new Chart(document.getElementById("grafica"),{
+type:"line",
+data:{datasets:[{data:data,borderColor:"#4cc9f0",parsing:false}]},
+options:{scales:{x:{type:"linear"}}}
+});
+}
+
+/* ---------------- COMPRESOR ---------------- */
+function calcularCompresor(){
+let V=parseFloat(document.getElementById("volumen").value);
+let P=parseFloat(document.getElementById("presion").value);
+let t=parseFloat(document.getElementById("tiempo").value);
+if(!V||!P||!t) return;
+
+let caudal=(V*P)/(t/60);
+let m3h=(caudal/1000)*60;
+let CV=caudal/92;
+let kW=CV*0.736;
+
+document.getElementById("displayComp").innerHTML=caudal.toFixed(0)+" L/min";
+document.getElementById("resultadoComp").innerHTML=
+"Producción: "+caudal.toFixed(0)+" L/min<br>"+
+m3h.toFixed(1)+" m³/h<br><br>"+
+"Motor estimado:<br>"+CV.toFixed(1)+" CV<br>"+kW.toFixed(2)+" kW";
+}
+
+/* ---------------- ELECTRICO ---------------- */
+function calcularElectrico(){
+let kw=parseFloat(document.getElementById("kw").value);
+let amps=parseFloat(document.getElementById("amps").value);
+let L=parseFloat(document.getElementById("longitud").value);
+let instalacion=document.getElementById("instalacion").value;
+if(!L) return;
+
+let I=amps?amps:(kw?kw*1000/(Math.sqrt(3)*400*0.85*0.9):0);
+if(!I) return;
+
+let cables=[
+{sec:2.5,Iz:{B1:18,B2:21,C:24,D:20},R:0.00741},
+{sec:4,Iz:{B1:24,B2:28,C:32,D:26},R:0.00461},
+{sec:6,Iz:{B1:31,B2:36,C:41,D:34},R:0.00308},
+{sec:10,Iz:{B1:46,B2:50,C:57,D:52},R:0.00183},
+{sec:16,Iz:{B1:61,B2:70,C:76,D:67},R:0.00115},
+{sec:25,Iz:{B1:80,B2:95,C:101,D:89},R:0.000727},
+{sec:35,Iz:{B1:99,B2:115,C:125,D:110},R:0.000524},
+{sec:50,Iz:{B1:125,B2:150,C:160,D:140},R:0.000387}
+];
+
+let seleccion=null,caida=0;
+
+for(let c of cables){
+if(I<=c.Iz[instalacion]){
+let dv=Math.sqrt(3)*I*L*c.R;
+let p=(dv/400)*100;
+if(p<=5){seleccion=c;caida=p;break;}
+}
+}
+
+if(!seleccion){
+document.getElementById("resultadoElec").innerHTML=
+"<span style='color:#ff4d6d;'>⚠ Necesaria sección superior a 50 mm²</span>";
+return;
+}
+
+let magneto=Math.ceil(I*1.25/5)*5;
+
+document.getElementById("displayElec").innerHTML=I.toFixed(1)+" A";
+
+let led=document.getElementById("led");
+let ledText=document.getElementById("ledText");
+led.className="led";
+
+if(caida<3){
+led.classList.add("blue");
+ledText.innerHTML="🔵 Correcto (<3%)";
 }
 else{
-let alpha=0.00385;
-resistencia=R0*(1+alpha*temp);
+led.classList.add("green");
+ledText.innerHTML="🟢 Aceptable (3-5%)";
 }
 
-resultado.innerHTML=
-"Resistencia estimada: "+resistencia.toFixed(2)+" Ω";
+document.getElementById("resultadoElec").innerHTML=
+"Sección: "+seleccion.sec+" mm²<br>"+
+"Caída tensión: "+caida.toFixed(2)+" %<br>"+
+"Magnetotérmico: "+magneto+" A";
 }
-
-document.getElementById("simTemp").addEventListener("input",function(){
-let tipo=document.getElementById("tipo").value;
-let beta=parseFloat(document.getElementById("beta").value);
-let t=parseFloat(this.value);
-actualizarDisplay(t);
-generarGrafica(tipo,beta,t);
-});
-
 </script>
 
 </body>
 </html>
-
-
-
-
-
-
-
