@@ -362,7 +362,15 @@ break;
 }
 
 if(!seleccion){
-document.getElementById("resultadoElectrico").innerHTML=
+document.getElementById("displayElec").innerHTML=
+I.toFixed(1)+" A";
+
+document.getElementById("resultadoElec").innerHTML=
+"<strong>Sección:</strong> "+seleccion.sec+" mm²<br>"+
+"Intensidad admisible ("+instalacion+"): "+seleccion.Iz[instalacion]+" A<br>"+
+"<strong>Caída tensión:</strong> "+caidaFinal.toFixed(2)+" %<br><br>"+
+"<strong>Magnetotérmico:</strong> "+magneto+" A curva D";
+
 "<span style='color:#ff4d6d;'>⚠ Necesaria sección superior a 50 mm²</span>";
 return;
 }
@@ -373,6 +381,22 @@ let magneto=Math.ceil(I*1.25/5)*5;
 // -------- LED caída tensión --------
 let ledColor="";
 let ledTexto="";
+let led = document.getElementById("led");
+let ledText = document.getElementById("ledText");
+
+led.className = "led"; // reset
+ledText.innerHTML = ledTexto;
+
+if(caidaFinal < 3){
+led.classList.add("blue");
+}
+else if(caidaFinal <= 5){
+led.classList.add("green");
+}
+else{
+led.classList.add("red");
+}
+
 
 if(caidaFinal < 3){
 ledColor="#00b4ff";
@@ -579,6 +603,7 @@ generarGrafica(tipo,beta,t);
 
 </body>
 </html>
+
 
 
 
