@@ -275,19 +275,38 @@ document.getElementById("resultadoSonda").innerHTML=
 
 // ---------- COMPRESOR ----------
 function calcularCompresor(){
+
 let V=parseFloat(document.getElementById("volumen").value);
 let P=parseFloat(document.getElementById("presion").value);
 let t=parseFloat(document.getElementById("tiempo").value);
+
 if(!V||!P||!t) return;
 
 let tMin=t/60;
+
+// Caudal en L/min
 let caudal=(V*P)/tMin;
+
+// m³/h
 let m3h=(caudal/1000)*60;
 
-document.getElementById("displayComp").innerHTML=caudal.toFixed(0)+" L/min";
+// CV reales según tu catálogo (92 L/min por CV)
+let CV=caudal/92;
+
+// kW aproximados
+let kW=CV*0.736;
+
+document.getElementById("displayComp").innerHTML=
+caudal.toFixed(0)+" L/min";
+
 document.getElementById("resultadoComp").innerHTML=
-m3h.toFixed(1)+" m³/h";
+"Producción: "+caudal.toFixed(0)+" L/min<br>"+
+m3h.toFixed(1)+" m³/h<br><br>"+
+"Motor estimado:<br>"+
+CV.toFixed(1)+" CV<br>"+
+kW.toFixed(2)+" kW";
 }
+
 
 // ---------- ELECTRICO ----------
 function calcularElectrico(){
@@ -507,6 +526,7 @@ generarGrafica(tipo,beta,t);
 
 </body>
 </html>
+
 
 
 
