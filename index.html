@@ -310,41 +310,94 @@ kW.toFixed(2)+" kW";
 
 // ---------- ELECTRICO ----------
 function calcularElectrico(){
+
 let kw=parseFloat(document.getElementById("kw").value);
 let amps=parseFloat(document.getElementById("amps").value);
 let L=parseFloat(document.getElementById("longitud").value);
+let arranque=document.getElementById("arranque").value;
 let instalacion=document.getElementById("instalacion").value;
 
 if(!L) return;
 
-let I=amps?amps:kw?kw*1000/(Math.sqrt(3)*400*0.85*0.9):0;
-if(!I) return;
+let I;
 
-let R=0.00308; // aprox 6mm
-let deltaV=Math.sqrt(3)*I*L*R;
-let porcentaje=(deltaV/400)*100;
-
-let led=document.getElementById("led");
-let text=document.getElementById("ledText");
-led.className="led";
-
-if(porcentaje<3){
-led.classList.add("blue");
-text.innerHTML="🔵 Correcto (<3%)";
+if(amps){
+I=amps;
 }
-else if(porcentaje<=5){
-led.classList.add("green");
-text.innerHTML="🟢 Aceptable (3-5%)";
+else if(kw){
+I=kw*1000/(Math.sqrt(3)*400*0.85*0.9);
 }
 else{
-led.classList.add("red");
-text.innerHTML="🔴 Fuera de norma (>5%)";
+return;
 }
 
-document.getElementById("displayElec").innerHTML=I.toFixed(1)+" A";
-document.getElementById("resultadoElec").innerHTML=
-"Caída tensión: "+porcentaje.toFixed(2)+" %";
+// Tabla técnica
+let cables=[
+{sec:2.5, Iz:{B1:18,B2:21,C:24,D:20}, R:0.00741},
+{sec:4, Iz:{B1:24,B2:28,C:32,D:26}, R:0.00461},
+{sec:6, Iz:{B1:31,B2:36,C:41,D:34}, R:0.00308},
+{sec:10, Iz:{B1:46,B2:50,C:57,D:52}, R:0.00183},
+{sec:16, Iz:{B1:61,B2:70,C:76,D:67}, R:0.00115},
+{sec:25, Iz:{B1:80,B2:95,C:101,D:89}, R:0.000727},
+{sec:35, Iz:{B1:99,B2:115,C:125,D:110}, R:0.000524},
+{sec:50, Iz:{B1:125,B2:150,C:160,D:140}, R:0.000387}
+];
+
+let seleccion=null;
+let caidaFinal=0;
+
+for(let c of cables){
+
+if(I <= c.Iz[instalacion]){
+
+let deltaV=Math.sqrt(3)*I*L*c.R;
+let porcentaje=(deltaV/400)*100;
+
+if(porcentaje <= 5){
+seleccion=c;
+caidaFinal=porcentaje;
+break;
 }
+}
+}
+
+if(!seleccion){
+document.getElementById("resultadoElectrico").innerHTML=
+"<span style='color:#ff4d6d;'>⚠ Necesaria sección superior a 50 mm²</span>";
+return;
+}
+
+// Magnetotérmico
+let magneto=Math.ceil(I*1.25/5)*5;
+
+// -------- LED caída tensión --------
+let ledColor="";
+let ledTexto="";
+
+if(caidaFinal < 3){
+ledColor="#00b4ff";
+ledTexto="🔵 LED azul = correcto (<3% caída)";
+}
+else if(caidaFinal <=5){
+ledColor="#00ff66";
+ledTexto="🟢 LED verde = aceptable (3-5%)";
+}
+else{
+ledColor="#ff4d4d";
+ledTexto="🔴 LED rojo = fuera de norma (>5%)";
+}
+
+document.getElementById("displayElectrico").innerHTML=
+I.toFixed(1)+" A";
+
+document.getElementById("resultadoElectrico").innerHTML=
+"<strong>Sección:</strong> "+seleccion.sec+" mm²<br>"+
+"Intensidad admisible ("+instalacion+"): "+seleccion.Iz[instalacion]+" A<br>"+
+"<strong>Caída tensión:</strong> "+caidaFinal.toFixed(2)+" %<br>"+
+"<span style='color:"+ledColor+"; font-weight:bold;'>"+ledTexto+"</span><br><br>"+
+"<strong>Magnetotérmico:</strong> "+magneto+" A curva D";
+}
+
 let chart;
 
 function calcNTC(R, R0, beta){
@@ -526,6 +579,7 @@ generarGrafica(tipo,beta,t);
 
 </body>
 </html>
+
 
 
 
