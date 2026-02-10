@@ -144,22 +144,47 @@ background:#222;
 <!-- ================= SONDAS ================= -->
 <div id="sondas" class="module active">
 
-<div class="display" id="displaySonda">0.00 °C</div>
+<div class="display" id="display">0.00 °C</div>
 
-<select id="tipoSonda">
-<option value="1000">NTC 1K</option>
-<option value="10000">NTC 10K</option>
-<option value="25000">NTC 25K</option>
+<div class="bar-container">
+  <div class="bar" id="bar"></div>
+</div>
+
+<canvas id="grafica"></canvas>
+
+<label>Simulación Temperatura (Modo Formación)</label>
+<input type="range" id="simTemp" min="-20" max="100" value="25" step="1">
+
+<label>Tipo de Sonda</label>
+<select id="tipo">
+  <option value="NTC_1000">NTC 1K</option>
+  <option value="NTC_10000">NTC 10K</option>
+  <option value="NTC_25000">NTC 25K</option>
+  <option value="PTC_1000">PTC 1K</option>
+  <option value="PTC_10000">PTC 10K</option>
+  <option value="PTC_25000">PTC 25K</option>
 </select>
 
-<input type="number" id="resistencia" placeholder="Resistencia (Ω)">
-<input type="number" id="beta" value="3435" placeholder="Beta">
+<label>Resistencia medida (Ω)</label>
+<input type="number" id="resistencia" placeholder="Ej: 589">
 
-<button class="calc" onclick="calcularSonda()">MEDIR</button>
+<label>Beta (solo NTC - default 3435)</label>
+<input type="number" id="beta" value="3435">
 
-<div class="result" id="resultadoSonda"></div>
+<button class="calc" onclick="calcular()">MEDIR</button>
+
+<hr style="margin:20px 0;border-color:#12384a;">
+
+<label>Temperatura para calcular Resistencia (°C)</label>
+<input type="number" id="tempInversa">
+
+<button class="calc" onclick="calcularInversa()">CALCULAR Ω</button>
+
+<div id="resultadoInverso" class="result"></div>
+<div id="sugerencia" class="result"></div>
 
 </div>
+
 
 <!-- ================= COMPRESOR ================= -->
 <div id="compresor" class="module">
@@ -286,3 +311,4 @@ document.getElementById("resultadoElec").innerHTML=
 
 </body>
 </html>
+
