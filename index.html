@@ -326,11 +326,188 @@ document.getElementById("displayElec").innerHTML=I.toFixed(1)+" A";
 document.getElementById("resultadoElec").innerHTML=
 "Caída tensión: "+porcentaje.toFixed(2)+" %";
 }
+let chart;
+
+function calcNTC(R, R0, beta){
+let T0=298.15;
+let tempK=1/((1/T0)+(1/beta)*Math.log(R/R0));
+return tempK-273.15;
+}
+
+function calcPTC(R,R0){
+let alpha=0.00385;
+return (R-R0)/(R0*alpha);
+}
+
+function actualizarDisplay(tempC){
+
+let display=document.getElementById("display");
+let bar=document.getElementById("bar");
+
+display.innerHTML=tempC.toFixed(2)+" °C";
+
+let porcentaje=((tempC+20)/120)*100;
+porcentaje=Math.max(0,Math.min(100,porcentaje));
+bar.style.width=porcentaje+"%";
+
+if(tempC<2){
+display.style.color="#00b4d8";
+bar.style.background="#00b4d8";
+}
+else if(tempC<=45){
+display.style.color="#4cc9f0";
+bar.style.background="#4cc9f0";
+}
+else{
+display.style.color="#ff6b6b";
+bar.style.background="#ff6b6b";
+}
+}
+
+function generarGrafica(tipo,beta,tempActual){
+
+let R0=parseInt(tipo.split("_")[1]);
+let temps=[];
+let resistencias=[];
+
+for(let t=-20;t<=100;t++){
+let R;
+if(tipo.includes("NTC")){
+let T0=298.15;
+let Tk=t+273.15;
+R=R0*Math.exp(beta*(1/Tk-1/T0));
+}
+else{
+let alpha=0.00385;
+R=R0*(1+alpha*t);
+}
+temps.push(t);
+resistencias.push(R);
+}
+
+if(chart) chart.destroy();
+
+chart=new Chart(document.getElementById("grafica"),{
+type:"line",
+data:{
+datasets:[
+{
+label:"Curva",
+data:temps.map((t,i)=>({x:t,y:resistencias[i]})),
+borderColor:"#4cc9f0",
+borderWidth:2,
+fill:false,
+parsing:false
+},
+{
+label:"Medición",
+data:[{x:tempActual,y:resistencias[Math.round(tempActual)+20]}],
+backgroundColor:"#ff6b6b",
+borderColor:"#ff6b6b",
+pointRadius:6,
+showLine:false,
+parsing:false
+}
+]
+},
+options:{
+responsive:true,
+plugins:{legend:{labels:{color:"white"}}},
+scales:{
+x:{type:"linear",min:-20,max:100,ticks:{color:"white"}},
+y:{ticks:{color:"white"}}
+}
+}
+});
+}
+
+function calcular(){
+
+let tipo=document.getElementById("tipo").value;
+let R=parseFloat(document.getElementById("resistencia").value);
+let beta=parseFloat(document.getElementById("beta").value);
+let sugerenciaDiv=document.getElementById("sugerencia");
+
+if(!R||R<=0) return;
+
+let R0=parseInt(tipo.split("_")[1]);
+let tempC;
+
+if(tipo.includes("NTC")){
+tempC=calcNTC(R,R0,beta);
+}
+else{
+tempC=calcPTC(R,R0);
+}
+
+actualizarDisplay(tempC);
+generarGrafica(tipo,beta,tempC);
+
+// Sugerencia automática solo NTC
+let opciones=["NTC_1000","NTC_10000","NTC_25000"];
+let mejorOpcion=tipo;
+let menorDif=Infinity;
+
+for(let op of opciones){
+let R0test=parseInt(op.split("_")[1]);
+let tTest=calcNTC(R,R0test,beta);
+if(tTest>-40&&tTest<120){
+let dif=Math.abs(tTest-25);
+if(dif<menorDif){
+menorDif=dif;
+mejorOpcion=op;
+}
+}
+}
+
+if(mejorOpcion!==tipo){
+sugerenciaDiv.innerHTML=
+"🔎 Sugerencia: encaja mejor con "+mejorOpcion.replace("_"," ");
+}
+else{
+sugerenciaDiv.innerHTML="";
+}
+}
+
+function calcularInversa(){
+
+let tipo=document.getElementById("tipo").value;
+let temp=parseFloat(document.getElementById("tempInversa").value);
+let beta=parseFloat(document.getElementById("beta").value);
+let resultado=document.getElementById("resultadoInverso");
+
+if(isNaN(temp)) return;
+
+let R0=parseInt(tipo.split("_")[1]);
+let resistencia;
+
+if(tipo.includes("NTC")){
+let T0=298.15;
+let Tk=temp+273.15;
+resistencia=R0*Math.exp(beta*(1/Tk-1/T0));
+}
+else{
+let alpha=0.00385;
+resistencia=R0*(1+alpha*temp);
+}
+
+resultado.innerHTML=
+"Resistencia estimada: "+resistencia.toFixed(2)+" Ω";
+}
+
+document.getElementById("simTemp").addEventListener("input",function(){
+let tipo=document.getElementById("tipo").value;
+let beta=parseFloat(document.getElementById("beta").value);
+let t=parseFloat(this.value);
+actualizarDisplay(t);
+generarGrafica(tipo,beta,t);
+});
 
 </script>
 
 </body>
 </html>
+
 
 
 
